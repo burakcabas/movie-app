@@ -1,0 +1,1 @@
+This project was developed using AI-Assisted Development / Pair Programming (with Google Gemini). AI was utilized for architectural decisions, rapid prototyping, and overcoming configuration challenges, while I managed the core integration, debugging, and deployment processes.

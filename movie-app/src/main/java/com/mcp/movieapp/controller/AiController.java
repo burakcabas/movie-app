@@ -11,14 +11,14 @@ public class AiController {
     @Autowired
     private GeminiService geminiService;
 
-    // Eski genel sohbet ucu
-    @GetMapping("/ask")
+    // GÜNCELLEME: /ask -> /general-chat (Genel Yapay Zeka Sohbeti)
+    @GetMapping("/general-chat")
     public String askAi(@RequestParam String question) {
         return geminiService.askQuestion(question);
     }
 
-    // YENI: Sadece veritabanindaki filmlerden tavsiye veren uc
-    @GetMapping("/recommend")
+    // GÜNCELLEME: /recommend -> /db-chat (Veritabanı Bağlamlı RAG Sohbeti)
+    @GetMapping("/db-chat")
     public String recommendMovie(@RequestParam String request) {
         return geminiService.recommendMovieFromDb(request);
     }

@@ -74,7 +74,8 @@ public class GeminiService {
         for (Movie m : movies) {
             movieListText.append("- ").append(m.getTitle())
                     .append(" (Yıl: ").append(m.getReleaseYear())
-                    .append(", Puan: ").append(m.getRating()).append(")\n");
+                    .append(", Puan: ").append(m.getRating())
+                    .append(", Tür/Kategori: ").append(m.getGenre()).append(")\n"); // TÜR BİLGİSİNİ EKLEDİK
         }
 
         // 3. Yapay zekaya veritabanini ve kurallari iceren bir "Super Prompt" (Gelistirilmis Istem) hazirla

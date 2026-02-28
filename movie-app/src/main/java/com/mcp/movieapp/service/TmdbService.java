@@ -1,5 +1,7 @@
 package com.mcp.movieapp.service;
 
+import com.mcp.movieapp.dto.TmdbGenre;
+import com.mcp.movieapp.dto.TmdbGenreResponse;
 import com.mcp.movieapp.dto.TmdbMovie;
 import com.mcp.movieapp.dto.TmdbResponse;
 import com.mcp.movieapp.entity.Movie;
@@ -8,6 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class TmdbService {
@@ -20,41 +27,80 @@ public class TmdbService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    // Veritabanina kaydetmek icin Repository'i buraya bagliyoruz
     @Autowired
     private MovieRepository movieRepository;
 
+    // 1. YENI METOT: TMDb'den Tur Sozlugunu Ceker ve Java Map'ine donusturur
+    private Map<Integer, String> fetchGenreDictionary() {
+        String url = baseUrl + "/genre/movie/list?api_key=" + apiKey + "&language=tr-TR";
+        Map<Integer, String> genreMap = new HashMap<>();
+
+        try {
+            TmdbGenreResponse response = restTemplate.getForObject(url, TmdbGenreResponse.class);
+            if (response != null && response.getGenres() != null) {
+                for (TmdbGenre genre : response.getGenres()) {
+                    genreMap.put(genre.getId(), genre.getName()); // Ornek: (28, "Aksiyon")
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Tur sozlugu cekilirken hata: " + e.getMessage());
+        }
+        return genreMap;
+    }
+
+    // 2. ANA METOT (Guncellendi)
     public void fetchPopularMovies() {
         String url = baseUrl + "/movie/popular?api_key=" + apiKey + "&language=tr-TR&page=1";
 
-        System.out.println("TMDb'den filmler cekiliyor ve veritabanina kaydediliyor...");
+        System.out.println("TMDb'den veriler guncelleniyor...");
 
         try {
-            // Artik veriyi String degil, olusturdugumuz TmdbResponse objesi olarak aliyoruz
+            // Once tur sozlugunu internetten indirip hazirda tutuyoruz
+            Map<Integer, String> genreDictionary = fetchGenreDictionary();
+
             TmdbResponse response = restTemplate.getForObject(url, TmdbResponse.class);
 
             if (response != null && response.getResults() != null) {
-                // Gelen her bir film icin dongu baslatiyoruz
+
+                // ESKİ movieRepository.deleteAll(); SATIRINI TAMAMEN SİL!
+                System.out.println("TMDb'den gelen filmler kontrol ediliyor...");
+
+                int eklenenFilmSayisi = 0;
+
                 for (TmdbMovie tmdbMovie : response.getResults()) {
 
-                    // TMDb verisini kendi Movie objemize donusturuyoruz
-                    Movie newMovie = new Movie();
-                    newMovie.setTitle(tmdbMovie.getTitle());
+                    // KONTROL NOKTASI: Bu film zaten veritabanimizda var mi?
+                    if (!movieRepository.existsByTitle(tmdbMovie.getTitle())) {
 
-                    // TMDb yili "2024-01-15" gibi gonderir, biz sadece ilk 4 hanesini (yili) alacagiz
-                    if(tmdbMovie.getReleaseDate() != null && tmdbMovie.getReleaseDate().length() >= 4) {
-                        newMovie.setReleaseYear(Integer.parseInt(tmdbMovie.getReleaseDate().substring(0, 4)));
+                        // Yoksa, yeni film olarak hazirla ve kaydet
+                        Movie newMovie = new Movie();
+                        newMovie.setTitle(tmdbMovie.getTitle());
+
+                        if(tmdbMovie.getReleaseDate() != null && tmdbMovie.getReleaseDate().length() >= 4) {
+                            newMovie.setReleaseYear(Integer.parseInt(tmdbMovie.getReleaseDate().substring(0, 4)));
+                        }
+                        newMovie.setRating(tmdbMovie.getVoteAverage());
+                        newMovie.setDirector("Bilinmiyor");
+
+                        if (tmdbMovie.getGenreIds() != null && !tmdbMovie.getGenreIds().isEmpty()) {
+                            List<String> genreNames = new ArrayList<>();
+                            for (Integer genreId : tmdbMovie.getGenreIds()) {
+                                String name = genreDictionary.get(genreId);
+                                if (name != null) {
+                                    genreNames.add(name);
+                                }
+                            }
+                            newMovie.setGenre(String.join(", ", genreNames));
+                        } else {
+                            newMovie.setGenre("Bilinmiyor");
+                        }
+
+                        movieRepository.save(newMovie);
+                        eklenenFilmSayisi++;
+                        System.out.println("Yeni Film Eklendi: " + newMovie.getTitle());
                     }
-
-                    newMovie.setRating(tmdbMovie.getVoteAverage());
-                    newMovie.setGenre("Bilinmiyor"); // TMDb'de turler karisiktir, simdilik boyle birakalim
-                    newMovie.setDirector("Bilinmiyor"); // TMDb yonetmeni baska bir adresten verir
-
-                    // Filmi veritabanina kaydet
-                    movieRepository.save(newMovie);
-                    System.out.println("Kaydedildi: " + newMovie.getTitle());
                 }
-                System.out.println("Islem basariyla tamamlandi!");
+                System.out.println("Islem tamamlandi. Toplam yeni eklenen film: " + eklenenFilmSayisi);
             }
 
         } catch (Exception e) {

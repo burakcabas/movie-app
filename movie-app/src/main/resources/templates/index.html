@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Yapay Zeka Destekli Sinema Platformu</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            /* Parlak, su gibi bir arka plan geçişi (gradient) */
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+            color: #222; /* Yazıları siyah/koyu gri yaparak okunabilirliği artırdık */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Cam efekti (Glassmorphism) ve parlak menü */
+        .navbar {
+            background: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.5));
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand { color: #005c97 !important; text-shadow: 1px 1px 2px rgba(255,255,255,0.8); }
+
+        /* Kartlara cam ve yansıma efekti */
+        .card {
+            background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0.7));
+            border: 1px solid rgba(255,255,255,0.9);
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,1);
+        }
+
+        .card-title { color: #005c97; }
+
+        /* Parlak (Glossy) Buton Tasarımı */
+        .btn-aero {
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+            border: 1px solid #00a8ff;
+            color: white;
+            border-radius: 20px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 4px 6px rgba(0,0,0,0.2);
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+        .btn-aero:hover {
+            background: linear-gradient(to bottom, #00f2fe 0%, #4facfe 100%);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .ai-response-box {
+            background: rgba(255, 255, 255, 0.6);
+            min-height: 120px;
+            font-size: 0.95em;
+            border-left: 4px solid #00f2fe;
+            border-radius: 0 10px 10px 0;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Input alanlarını ferahlattık */
+        .form-control {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        .form-control:focus {
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+            border-color: #00f2fe;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar mb-4 sticky-top">
+    <div class="container-fluid px-4">
+        <span class="navbar-brand mb-0 h1 fs-3 fw-bold">🫧 AI-Movie App</span>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 px-lg-5">
+    <div class="row">
+
+        <div class="col-md-3 mb-4">
+            <div class="card sticky-top" style="top: 90px;">
+                <div class="card-header bg-transparent border-bottom-0 text-center fw-bold fs-5 mt-2" style="color: #005c97;">
+                    🤖 Gemini Asistanı
+                </div>
+                <div class="card-body">
+                    <p class="small text-secondary mb-2">Sorunuzu yazın, <b>Enter</b> ile gönderin. Alt satıra geçmek için <b>Shift+Enter</b> kullanın.</p>
+                    <textarea id="aiQuestion" class="form-control mb-3" rows="3" placeholder="Örn: Bana en yüksek puanlı aksiyon filmini önerir misin?"></textarea>
+                    <button class="btn btn-aero w-100 fw-bold" onclick="askAi()">Soruyu Gönder</button>
+                    <hr class="border-secondary opacity-25">
+                    <h6 class="text-secondary fw-bold">Yapay Zeka Yanıtı:</h6>
+                    <div id="aiResponse" class="p-3 ai-response-box">
+                        <em class="text-muted">Yanıt bekleniyor...</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2">
+                <h3 class="m-0 fw-bold" style="color: #005c97;">🎞️ Kütüphanemiz</h3>
+            </div>
+
+            <div class="input-group mb-4 shadow-sm" style="border-radius: 20px; overflow: hidden;">
+                <input type="text" id="searchInput" class="form-control form-control-lg border-0" placeholder="Film adı ile ara (Enter'a bas)...">
+                <button class="btn btn-aero px-4 border-0 rounded-0" onclick="searchMovies()">Ara</button>
+            </div>
+
+            <div class="row" id="movieGrid">
+                <div class="col-12 text-center text-secondary mt-5">
+                    <div class="spinner-border text-info mb-3" role="status"></div>
+                    <h5>Filmler Yükleniyor...</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        loadMovies();
+        setupKeyListeners(); // Enter tuşu özelliklerini başlatan fonksiyon
+    });
+
+    // YENİ: Enter Tuşu Dinleyicileri (Kullanıcı Deneyimi İyileştirmesi)
+    function setupKeyListeners() {
+        // Arama çubuğunda Enter'a basılınca ara
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                searchMovies();
+            }
+        });
+
+        // Yapay Zeka kutusunda Enter'a basılınca gönder, Shift+Enter alt satıra geçsin
+        const aiInput = document.getElementById('aiQuestion');
+        aiInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Enter'ın kendi kendine alt satıra geçmesini engelle
+                askAi();
+            }
+        });
+    }
+
+    function loadMovies() {
+        fetch('http://localhost:8080/api/movies')
+            .then(response => response.json())
+            .then(data => displayMovies(data))
+            .catch(error => {
+                document.getElementById('movieGrid').innerHTML = '<div class="alert alert-danger">Filmler yüklenirken sunucuya ulaşılamadı.</div>';
+            });
+    }
+
+    function searchMovies() {
+        const query = document.getElementById('searchInput').value;
+        const grid = document.getElementById('movieGrid');
+
+        grid.innerHTML = '<div class="col-12 text-center text-info mt-5"><div class="spinner-border mb-3" role="status"></div><h5>Aranıyor...</h5></div>';
+
+        fetch(`http://localhost:8080/api/movies/search?query=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                if(data.hata) {
+                    grid.innerHTML = `<div class="alert alert-warning" style="background: rgba(255,255,255,0.8);">${data.hata} - ${data.detay}</div>`;
+                } else {
+                    displayMovies(data);
+                }
+            })
+            .catch(error => console.error("Arama hatası:", error));
+    }
+
+    function askAi() {
+        const question = document.getElementById('aiQuestion').value;
+        const responseBox = document.getElementById('aiResponse');
+
+        if (!question.trim()) {
+            responseBox.innerHTML = '<span class="text-danger fw-bold">Lütfen önce bir soru yazın.</span>';
+            return;
+        }
+
+        responseBox.innerHTML = '<span class="text-info fw-bold">Gemini Veritabanını İnceliyor... 💭</span>';
+
+        fetch(`http://localhost:8080/api/ai/db-chat?request=${encodeURIComponent(question)}`)
+            .then(response => response.text())
+            .then(data => {
+                let formattedData = data.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+                formattedData = formattedData.replace(/\n/g, '<br>');
+                responseBox.innerHTML = formattedData;
+            })
+            .catch(error => {
+                responseBox.innerHTML = '<span class="text-danger fw-bold">Yapay zekaya ulaşılamadı.</span>';
+            });
+    }
+
+    function displayMovies(movies) {
+        const grid = document.getElementById('movieGrid');
+        grid.innerHTML = '';
+
+        if (movies.length === 0) {
+            grid.innerHTML = '<div class="col-12 alert alert-info text-center" style="background: rgba(255,255,255,0.8);">Hiç film bulunamadı.</div>';
+            return;
+        }
+
+        movies.forEach(movie => {
+            const cardHtml = `
+                <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">${movie.title}</h5>
+                            <h6 class="card-subtitle mb-3 text-secondary">🗓️ ${movie.releaseYear} | ⭐ ${movie.rating}</h6>
+                            <p class="card-text small mb-0"><span class="text-primary fw-bold">Tür:</span> <span class="text-dark">${movie.genre}</span></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            grid.innerHTML += cardHtml;
+        });
+    }
+</script>
+
+</body>
+</html>

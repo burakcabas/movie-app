@@ -27,6 +27,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # 3. Maven kullanarak projeyi derle ve test et
+      # 3. Maven kullanarak projeyi derle ve test et (YOL GÜNCELLENDİ)
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B package --file movie-app/pom.xml

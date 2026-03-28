@@ -1,0 +1,32 @@
+# Bu otomasyonun adi
+name: Java CI with Maven
+
+# Bu robot ne zaman calissin? (Ana branch'e her kod geldiginde)
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+# Robotun yapacagi isler (Jobs)
+jobs:
+  build:
+    # Bu proje hangi sanal bilgisayarda derlensin? (En guncel Ubuntu)
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Kodlari GitHub'dan sanal makineye indir
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Sanal makineye Java 21 kur (Bizim projemiz Java 21 ile calisiyor)
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      # 3. Maven kullanarak projeyi derle ve test et
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml

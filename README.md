@@ -3,7 +3,7 @@
 ![Java](https://img.shields.io/badge/Java-21-orange.svg) ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3-brightgreen.svg) ![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg) ![Gemini AI](https://img.shields.io/badge/Google_Gemini-Pro-yellow.svg) ![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF.svg)
 
 ## 📖 The Story Behind This Project
-This project started as a standard REST API but quickly evolved into a much more complex system. My main goal was not just to build another CRUD application, but to bridge the gap between traditional databases and modern Large Language Models (LLMs). 
+This project started as a standard REST API but quickly evolved into a much more complex system. My main goal was not just to build another CRUD application, but to bridge the gap between traditional databases and modern Large Language Models (LLMs).
 
 Instead of letting the AI answer from its general internet knowledge, I implemented a **Retrieval-Augmented Generation (RAG)** architecture. The Gemini AI acts as a "smart waiter," reading strictly from my own MySQL database to provide personalized, context-aware movie recommendations.
 
@@ -33,6 +33,14 @@ Instead of letting the AI answer from its general internet knowledge, I implemen
 5. Open your browser and navigate to: `http://localhost:8080`
 6. (Optional) Check application health: `http://localhost:8080/actuator/health`
 
+## 📸 Screenshots
+
+![Main Dashboard](images/screen1.png)
+*The Frutiger Aero inspired user interface displaying the local movie library and the integrated Gemini AI assistant.*
+
+![AI Recommendation](images/screen2.png)
+*Context-aware search and AI recommendation in action, providing dynamic responses strictly based on the filtered local database.*
+
 ---
 ---
 
@@ -59,3 +67,11 @@ Yapay zekanın internetteki genel bilgileriyle cevap vermesi yerine, **RAG (Retr
 4. Projeyi IDE üzerinden veya Maven ile çalıştırın: `mvn spring-boot:run`
 5. Tarayıcınızda şu adrese gidin: `http://localhost:8080`
 6. (Opsiyonel) Sistem sağlık durumunu kontrol edin: `http://localhost:8080/actuator/health`
+
+## 📸 Ekran Görüntüleri
+
+![Ana Panel](images/screen1.png)
+*Yerel film kütüphanesini ve entegre Gemini yapay zeka asistanını sergileyen Frutiger Aero estetiğindeki kullanıcı arayüzü.*
+
+![Yapay Zeka Önerisi](images/screen2.png)
+*Filtrelenmiş yerel veritabanı sonuçlarına dayalı olarak kesin ve bağlama uygun yapay zeka önerisi sunan arama işlemi.*
